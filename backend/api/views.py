@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import F, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -19,6 +18,7 @@ from api.serializers import (IngredientSerializer, RecipeAddSerializer,
                              ShortRecipeShoppingSerializer,
                              SubscribeSerializer, TagSerializer,
                              UserCreateSerializer, UserSerializer)
+from api.utils import create_shopping_cart_report
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             Shopping, Tag)
 from users.models import Follow, User
@@ -86,8 +86,6 @@ class RecipeShoppingViewSet(ModelViewSet):
     def favorite(self, request, pk):
         if request.method == 'POST':
             return self.add_to(Favorite, request.user, pk)
-        else:
-            return self.delete_from(Favorite, request.user, pk)
 
     @action(
         detail=True,
@@ -97,8 +95,6 @@ class RecipeShoppingViewSet(ModelViewSet):
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
             return self.add_to(Shopping, request.user, pk)
-        else:
-            return self.delete_from(Shopping, request.user, pk)
 
     def add_to(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
@@ -132,21 +128,11 @@ class DownloadShoppingCartView(views.APIView):
                 recipe_id__in=request.session['purchases']
             )
 
-        items = items.values(
-            'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(
-            name=F('ingredient__name'),
-            units=F('ingredient__measurement_unit'),
-            total=Sum('amount'),
-        ).order_by('-total')
+        text = create_shopping_cart_report(items)
 
-        text = '\n'.join([
-            f"{item['name']} ({item['units']}) - {item['total']}"
-            for item in items
-        ])
         filename = "foodgram_shopping_cart.txt"
         response = HttpResponse(text, content_type='text/plain')
-        response['Content-Disposition'] = f'attachment; filename{filename}'
+        response['Content-Disposition'] = f'attachment; filename={filename}'
 
         return response
 
