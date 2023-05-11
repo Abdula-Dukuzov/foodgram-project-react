@@ -42,7 +42,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/front_foodgram:v2.0
+          tags: ${{ secrets.DOCKER_USERNAME }}/frontend_foodgram:latest
 
       - name: Push backend to Docker Hub
         uses: docker/build-push-action@v2
@@ -50,7 +50,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/back_foodgram:v2.0
+          tags: ${{ secrets.DOCKER_USERNAME }}/backend_foodgram:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -65,8 +65,8 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           script: | 
             cd foodgram-project-react/infra
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/back_foodgram:v2.0
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/front_foodgram:v2.0
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/backend_foodgram:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/frontend_foodgram:latest
             sudo docker-compose stop 
             sudo docker-compose rm backend
             sudo docker-compose rm frontend
