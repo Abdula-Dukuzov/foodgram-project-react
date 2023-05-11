@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import F
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -68,7 +67,8 @@ class FollowSerializer(serializers.ModelSerializer):
     """
     recipes = FollowShortRecipeSerializer(many=True, read_only=True)
     is_subscribed = SerializerMethodField(read_only=True)
-    recipes_count = serializers.IntegerField(source='recipes.count', read_only=True)
+    recipes_count = serializers.IntegerField(
+        source='recipes.count', read_only=True)
 
     class Meta:
         model = Follow
@@ -84,7 +84,8 @@ class FollowSerializer(serializers.ModelSerializer):
         request = self.context['request']
         author = self.initial_data['author']
         if request.user == author:
-            raise serializers.ValidationError({'errors': 'Нельзя подписаться на себя.'})
+            raise serializers.ValidationError(
+                {'errors': 'Нельзя подписаться на себя.'})
         if request.user.follower.filter(author=author).exists():
             raise serializers.ValidationError({'errors': 'Есть подписка.'})
         return data
@@ -302,7 +303,8 @@ class RecipeAddSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             data['is_favorited'] = self.get_is_favorited(instance)
-            data['is_in_shopping_cart'] = self.get_is_in_shopping_cart(instance)
+            data['is_in_shopping_cart'] = self.get_is_in_shopping_cart(
+                instance)
         else:
             data['is_favorited'] = False
             data['is_in_shopping_cart'] = False
@@ -323,7 +325,8 @@ class SubscribeSerializer(UserSerializer):
     Сериализатор вывода авторов на которых подписан текущий пользователь.
     """
     recipes = ShortRecipeShoppingSerializer(many=True, read_only=True)
-    recipes_count = serializers.IntegerField(source='recipes.count', read_only=True)
+    recipes_count = serializers.IntegerField(
+        source='recipes.count', read_only=True)
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
