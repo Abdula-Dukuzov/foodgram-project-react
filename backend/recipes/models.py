@@ -37,7 +37,7 @@ class Tag(models.Model):
 
 class Ingredient(models.Model):
     """
-    Модель ингридиентов для рецепта: описываем 'name', 'measurement_unit'.
+    Модель ингредиентов для рецепта: описываем 'name', 'measurement_unit'.
     """
     name = models.CharField(
         verbose_name='name_ingredient',
@@ -52,7 +52,7 @@ class Ingredient(models.Model):
 
     class Meta:
         verbose_name = 'Ингредиент'
-        verbose_name_plural = 'Ингридиенты'
+        verbose_name_plural = 'Ингредиенты'
         ordering = ('name',)
 
     def __str__(self):
@@ -190,14 +190,14 @@ class IngredientRecipe(models.Model):
             ),
             MaxValueValidator(
                 3000,
-                'Достаточное количество ингридиентов!',
+                'Достаточное количество ингредиентов!',
             ),
         ),
         help_text='amount_ingredient',
     )
 
     class Meta:
-        verbose_name = 'Ингридиент'
+        verbose_name = 'Ингреиент'
         verbose_name_plural = 'Ингредиенты рецепта'
         constraints = [
             models.UniqueConstraint(

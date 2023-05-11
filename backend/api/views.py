@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import status, views, viewsets
@@ -24,7 +23,6 @@ from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
 from users.models import Follow, User
 
 User = get_user_model()
-now = timezone.now()
 
 
 class TagViewSet(ModelViewSet):
@@ -36,7 +34,7 @@ class TagViewSet(ModelViewSet):
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
-    """Вывод ингридиентов."""
+    """Вывод ингредиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
