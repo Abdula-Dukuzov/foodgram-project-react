@@ -1,14 +1,3 @@
-from django.contrib.auth import get_user_model
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet
-from rest_framework import status, views, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
-from rest_framework.views import Response
-from rest_framework.viewsets import ModelViewSet
-
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import LimitPageNumberPagination
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
@@ -18,8 +7,18 @@ from api.serializers import (IngredientSerializer, RecipeAddSerializer,
                              SubscribeSerializer, TagSerializer,
                              UserCreateSerializer, UserSerializer)
 from api.utils import create_shopping_cart_report
+from django.contrib.auth import get_user_model
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             Shopping, Tag)
+from rest_framework import status, views, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.views import Response
+from rest_framework.viewsets import ModelViewSet
 from users.models import Follow, User
 
 User = get_user_model()

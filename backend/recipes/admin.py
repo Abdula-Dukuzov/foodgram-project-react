@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin, TabularInline
-
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             Shopping, Tag)
 

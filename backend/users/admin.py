@@ -2,7 +2,6 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin, register
 from django.contrib.auth import get_user_model
-
 from users.models import Follow, User
 
 User = get_user_model()
