@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(
 
 SECRET_KEY = os.environ.get('SECRET_KEY', default='your_secret_key')
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
