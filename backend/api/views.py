@@ -154,22 +154,30 @@ class UserViewSet(UserViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def subscribe(self, request, id):
-        return self._set_status_favorite(
-            request,
-            User,
-            Follow,
-            SubscribeSerializer
-        )
+        user = self.get_object()
+        current_user = request.user
+
+        if request.method == 'POST':
+            # Добавление подписки
+            if current_user == user:
+                return Response({'errors': 'Вы не можете подписаться на самого себя.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            Follow.objects.get_or_create(user=user, author=current_user)
+            return Response(status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            # Удаление подписки
+            follow = get_object_or_404(Follow, user=user, author=current_user)
+            follow.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
-        permission_classes=(IsAuthenticated,))
+        permission_classes=(IsAuthenticated,),
+        methods=['GET']
+    )
     def subscriptions(self, request):
-        """Получить подписки пользователя."""
-
-        queryset = request.user.follower.filter(user=request.user.id)
-        pages = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(
-            pages, many=True,
-            context={'request': request})
-        return self.get_paginated_response(serializer.data)
+        queryset = Follow.objects.filter(author=request.user)
+        serializer = SubscribeSerializer(queryset, many=True)
+        return Response(serializer.data)
