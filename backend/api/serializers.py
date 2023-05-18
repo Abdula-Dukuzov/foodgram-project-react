@@ -301,12 +301,8 @@ class RecipeAddSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            data['is_favorited'] = self.get_is_favorited(instance)
-            data['is_in_shopping_cart'] = self.get_is_in_shopping_cart(
-                instance)
-        else:
-            data['is_favorited'] = False
-            data['is_in_shopping_cart'] = False
+            data['is_favorited'] = instance.favorites.filter(user=request.user).exists()
+            data['is_in_shopping_cart'] = instance.shopping_cart.filter(user=request.user).exists()
         return data
 
 
@@ -351,11 +347,12 @@ class SubscribeSerializer(UserSerializer):
 
         return ShortRecipeShoppingSerializer(recipes, many=True).data
 
-    def get_is_subscribed(self, instance):
-        request = self.context.get('request')
-        if request is not None and request.user.is_authenticated:
-            return Follow.objects.filter(author=instance, user=request.user).exists()
-        return False
+    def get_is_subscribed(self, obj):
+        if not self.context['request'].user.is_authenticated:
+            return False
+
+        return Follow.objects.filter(
+            author=obj, user=self.context['request'].user).exists()
 
 
 class ShoppingSerializer(serializers.ModelSerializer):

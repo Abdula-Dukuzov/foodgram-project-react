@@ -141,10 +141,8 @@ class UserViewSet(UserViewSet):
     pagination_class = LimitPageNumberPagination
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.request.method.lower() == 'post':
             return UserCreateSerializer
-        elif self.action == 'subscriptions':
-            return SubscribeSerializer
         return UserSerializer
 
     def perform_create(self, serializer):
@@ -181,5 +179,5 @@ class UserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         queryset = Follow.objects.filter(author=request.user)
-        serializer = SubscribeSerializer(queryset, many=True, context={'request': request})
+        serializer = SubscribeSerializer(queryset, many=True)
         return Response(serializer.data)
