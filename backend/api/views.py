@@ -5,7 +5,7 @@ from api.serializers import (IngredientSerializer, RecipeAddSerializer,
                              RecipeReadSerializer,
                              ShortRecipeShoppingSerializer,
                              SubscribeSerializer, TagSerializer,
-                             UserSerializer)
+                             UserCreateSerializer, UserSerializer)
 from api.utils import create_shopping_cart_report
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
@@ -135,39 +135,51 @@ class DownloadShoppingCartView(views.APIView):
 
 
 class UserViewSet(UserViewSet):
-    queryset = User.objects.all()
+    """Вывод пользователей."""
     serializer_class = UserSerializer
+    queryset = User.objects.all()
     pagination_class = LimitPageNumberPagination
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserCreateSerializer
+        elif self.action == 'subscriptions':
+            return SubscribeSerializer
+        return UserSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(password=self.request.data['password'])
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
+        methods=['POST', 'DELETE'],
         permission_classes=(IsAuthenticated,),
     )
     def subscribe(self, request, id):
-        user = request.user
-        author = get_object_or_404(User, pk=id)
+        user = self.get_object()
+        current_user = request.user
 
         if request.method == 'POST':
-            serializer = SubscribeSerializer(
-                author, data=request.data, context={'request': request}
-            )
-            serializer.is_valid(raise_exception=True)
-            Follow.objects.create(user=user, author=author)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # Добавление подписки
+            if current_user == user:
+                return Response({'errors': 'Вы не можете подписаться на самого себя.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            Follow.objects.get_or_create(user=user, author=current_user)
+            return Response(status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            get_object_or_404(
-                Follow, user=user, author=author
-            ).delete()
+            # Удаление подписки
+            follow = get_object_or_404(Follow, user=user, author=current_user)
+            follow.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+        methods=['GET']
+    )
     def subscriptions(self, request):
-        user = request.user
-        queryset = User.objects.filter(following__user=user)
-        pages = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(
-            pages, many=True, context={'request': request}
-        )
-        return self.get_paginated_response(serializer.data)
+        queryset = Follow.objects.filter(author=request.user)
+        serializer = SubscribeSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
