@@ -353,7 +353,7 @@ class SubscribeSerializer(UserSerializer):
 
     def get_is_subscribed(self, instance):
         request = self.context.get('request')
-        if request and request.user.is_authenticated:
+        if request is not None and request.user.is_authenticated:
             return Follow.objects.filter(author=instance, user=request.user).exists()
         return False
 
