@@ -168,7 +168,13 @@ class UserViewSet(UserViewSet):
         user = request.user
         queryset = User.objects.filter(following__user=user)
         pages = self.paginate_queryset(queryset)
+
         serializer = SubscribeSerializer(
-            pages, many=True, context={'request': request}
+            pages, many=True, context=self.get_serializer_context()
         )
         return self.get_paginated_response(serializer.data)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
